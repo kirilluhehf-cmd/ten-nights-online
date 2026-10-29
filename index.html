@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ten Nights in a Hotel</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
+#game-container{position:absolute;inset:0;background:#000;overflow:hidden}
+#office{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;transition:filter .12s ease}
+#time-display{position:absolute;top:12px;right:18px;color:#fff;font-size:clamp(14px,2vw,22px);font-weight:800;z-index:10;text-shadow:0 2px 8px #000}
+#main-menu{position:absolute;inset:0;z-index:500;background:#000 url('menu_bg.png') center/cover no-repeat;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#main-menu:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.2) 55%,rgba(0,0,0,.7)),linear-gradient(0deg,rgba(0,0,0,.78),transparent 45%,rgba(0,0,0,.45));pointer-events:none}
+.menu-content{position:relative;z-index:2;width:min(92vw,760px);text-align:center;margin-top:-1vh}
+.game-title{margin:0 0 8px;color:#eee;letter-spacing:.12em;font-family:Georgia,serif;font-size:clamp(34px,7vw,76px);line-height:.92;text-shadow:0 3px 0 #111,0 0 12px #aaa,0 0 35px rgba(255,255,255,.35)}
+.game-title span{display:block;color:#b20d12;letter-spacing:.22em;font-size:.55em;margin-top:12px;text-shadow:0 0 8px #d10d14,0 0 24px rgba(180,0,0,.7)}
+.menu-sub{color:#aaa;letter-spacing:.35em;font-size:clamp(9px,1.7vw,14px);margin:18px 0 30px;text-transform:uppercase}
+.menu-buttons{display:flex;flex-direction:column;align-items:center;gap:12px}
+.menu-btn{width:min(330px,78vw);padding:15px 22px;border:1px solid rgba(255,255,255,.38);background:rgba(5,5,5,.76);color:#eee;font-size:clamp(15px,2.8vw,20px);font-weight:800;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.55),inset 0 0 18px rgba(255,255,255,.04);transition:.15s}
+.menu-btn:hover,.menu-btn:active{background:rgba(100,0,0,.72);border-color:#d33;transform:scale(1.02)}
+.menu-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;background:rgba(0,0,0,.65);border-color:#555}
+.save-info{margin-top:18px;color:#aaa;font-size:12px;letter-spacing:.08em}
+.btn{position:absolute;z-index:20;bottom:2.5%;min-width:110px;padding:12px 14px;border:1px solid rgba(255,255,255,.65);border-radius:6px;color:#fff;background:rgba(10,10,10,.72);font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55);backdrop-filter:blur(3px)}
+#tablet-btn{left:2%}#flashlight-btn{left:20%}#curtain-btn{left:40%}#turn-btn{right:2%}
+#flashlight-btn.on{background:#e6e6e6;color:#111;border-color:#fff}#curtain-btn.closed{background:#730000;border-color:#f44}
+#tablet-screen{display:none;position:absolute;inset:0;background:#050505;z-index:100;padding:1.2%}
+#camera-monitor{position:absolute;left:1%;top:1%;width:67%;height:96%;background:#000;border:3px solid #222;background-size:cover;background-position:center;display:flex;align-items:flex-end}
+#monitor-overlay{position:absolute;inset:0;background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,.25) 50%),linear-gradient(90deg,rgba(255,0,0,.05),rgba(0,255,0,.02),rgba(0,0,255,.05));background-size:100% 4px,6px 100%;z-index:2;pointer-events:none}
+#monitor-text-box{position:relative;width:100%;z-index:3;background:rgba(0,0,0,.76);color:#0f0;font-family:monospace;font-size:clamp(11px,1.7vw,16px);padding:12px;text-shadow:0 0 5px #0f0;white-space:pre-line}
+#rec-indicator{position:absolute;top:12px;left:14px;color:red;font-weight:800;font-size:15px;z-index:4;animation:blink 1s infinite;text-shadow:2px 2px 4px #000}
+#action-monitor-btn{display:none;position:absolute;top:12px;right:12px;z-index:5;background:#8d0909;color:#fff;border:1px solid #fff;padding:11px 14px;font-weight:800;border-radius:4px;cursor:pointer;box-shadow:0 0 14px rgba(255,0,0,.35)}
+#camera-map{position:absolute;right:1%;top:1%;width:30%;height:96%;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(48px,1fr);gap:7px;padding:4px}
+.cam-btn{background:#101010;color:#0f0;border:1px solid #0f0;border-radius:4px;font-size:clamp(9px,1.2vw,13px);font-weight:800;font-family:monospace;cursor:pointer}
+.cam-btn.active{background:#0f0;color:#000;box-shadow:0 0 10px #0f0}#close-tablet{grid-column:1/-1;background:#420000;color:#fff;border-color:#f00}
+@keyframes blink{50%{opacity:.15}}
+#jumpscare-overlay{position:fixed;inset:0;z-index:99999;background:#000 center/cover no-repeat;display:flex;align-items:flex-end;justify-content:center;padding:22px}
+#jumpscare-overlay .caption{background:rgba(0,0,0,.78);padding:12px 18px;border:2px solid #d00;color:#fff;font-size:clamp(14px,2.5vw,20px);font-weight:800;text-align:center}
+#night-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;color:#fff;text-align:center}
+#night-overlay .box{width:min(90vw,460px);padding:30px;background:#090909;border:1px solid #555;box-shadow:0 0 40px #000}#night-overlay h2{font-family:Georgia,serif;font-size:38px;margin:0 0 8px}.night-btn{margin-top:20px;padding:13px 24px;background:#520000;color:#fff;border:1px solid #c33;font-weight:800}
+@media (orientation:portrait){#game-container{transform:rotate(-90deg);transform-origin:left top;width:100vh;height:100vw;top:100%;left:0}}
+@media (max-width:800px){.btn{min-width:90px;padding:11px 9px;font-size:11px}#tablet-btn{left:1%}#flashlight-btn{left:19%}#curtain-btn{left:38%}#turn-btn{right:1%}}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="main-menu">
+    <div class="menu-content">
+      <h1 class="game-title">TEN NIGHTS<span>IN A HOTEL</span></h1>
+      <div class="menu-sub">THE HOTEL REMEMBERS YOUR LAST NIGHT</div>
+      <div class="menu-buttons"><button id="continue-btn" class="menu-btn" type="button">ПРОДОЛЖИТЬ</button><button id="new-game-btn" class="menu-btn" type="button">НОВАЯ ИГРА</button></div>
+      <div id="save-info" class="save-info"></div>
+    </div>
+  </div>
+  <div id="time-display">12:00 AM | Ночь 1</div>
+  <div id="office" style="background-image:url('office_front.jpg');filter:brightness(.2)"></div>
+  <div id="touch-controls">
+    <button id="tablet-btn" class="btn" type="button">ПЛАНШЕТ</button><button id="flashlight-btn" class="btn" type="button">ФОНАРИК</button><button id="curtain-btn" class="btn" type="button">ШТОРЫ: ОТКР</button><button id="turn-btn" class="btn" type="button">ПОВЕРНУТЬСЯ</button>
+  </div>
+  <div id="tablet-screen">
+    <div id="camera-monitor"><div id="monitor-overlay"></div><div id="rec-indicator">● REC</div><button id="action-monitor-btn" >ЗАКРЫТЬ РЕШЁТКУ</button><div id="monitor-text-box">ЗАГРУЗКА...</div></div>
+    <div id="camera-map">
+      <button id="cam1-btn" class="cam-btn active" >CAM 1: MAIN HALL</button><button id="cam2-btn" class="cam-btn" >CAM 2: VENTILATION</button><button id="cam3-btn" class="cam-btn" >CAM 3: STAIRCASE</button><button id="cam4-btn" class="cam-btn" >CAM 4: ROOM 5005</button><button id="cam5-btn" class="cam-btn" >CAM 5: ELEVATOR</button><button id="cam6-btn" class="cam-btn" >CAM 6: LOBBY</button><button id="cam7-btn" class="cam-btn" >CAM 7: LAUNDRY</button><button id="cam8-btn" class="cam-btn" >CAM 8: KITCHEN</button><button id="close-tablet" class="cam-btn" >ЗАКРЫТЬ МОНИТОР [X]</button>
+    </div>
+  </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
+<script src="online-client.js"></script>
+</body>
+</html>
